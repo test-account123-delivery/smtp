@@ -1,0 +1,35 @@
+# Configuration file for CNS Closed Accounts Email script
+
+# SQL queries section
+sql_queries:
+  get_records: |
+    SELECT 
+      e.ENTITY_NUMBER,
+      e.ACCTNBR,
+      e.ENTITY_TYPE,
+      e.CLOSE_DATE
+    FROM entity_records e
+    {{close_date_join}}
+
+  update_pers_stdl: |
+    UPDATE persuserfield 
+    SET stdl_userfield = 'Y' 
+    WHERE persnbr = :1
+
+  update_org_stdl: |
+    UPDATE orguserfield 
+    SET stdl_userfield = 'Y' 
+    WHERE orgnbr = :1
+
+# Join fragments for different scenarios
+join_fragments:
+  date_specific: |
+    INNER JOIN close_dates cd ON e.CLOSE_DATE = cd.CLOSE_DATE
+    WHERE cd.CLOSE_DATE = '{{run_date}}'
+
+  full_cleanup: |
+    WHERE e.CLOSE_DATE IS NOT NULL
+
+# Template configuration
+template_directory: "templates"
+template_file: "notification_email.html"
